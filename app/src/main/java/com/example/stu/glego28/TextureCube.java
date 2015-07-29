@@ -19,14 +19,15 @@ import android.opengl.GLUtils;
  * Render the cube by translating and rotating the face.
  */
 public class TextureCube {
+    Context context;
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
 
     private float[] vertices = { // Vertices for a face
-            -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
-            1.0f, -1.0f, 0.0f,  // 1. right-bottom-front
-            -1.0f,  1.0f, 0.0f,  // 2. left-top-front
-            1.0f,  1.0f, 0.0f   // 3. right-top-front
+            -1f, -1f, 0.0f,  // 0. left-bottom-front
+            1f, -1f, 0.0f,  // 1. right-bottom-front
+            -1f,  1f, 0.0f,  // 2. left-top-front
+            1f,  1f, 0.0f   // 3. right-top-front
     };
 
     float[] texCoords = { // Texture coords for the above face (NEW)
@@ -121,7 +122,8 @@ public class TextureCube {
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
 
         // Construct an input stream to texture image "res\drawable\nehe.png"
-        InputStream istream = context.getResources().openRawResource(R.drawable.polly);
+        InputStream  istream = context.getResources().openRawResource(+ R.drawable.polly);
+        //InputStream istream = context.getResources().openRawResource(R.raw.polly1);
         Bitmap bitmap;
         try {
             // Read and decode input as bitmap

@@ -8,6 +8,9 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
+
+import java.util.ArrayList;
+
 /**
  *  OpenGL Custom renderer used with GLSurfaceView
  */
@@ -15,7 +18,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     Context context;   // Application's context
     Submarine mysub;
     Triangle triangle;     // ( NEW )
-    Square quad;           // ( NEW )
+    Square quad;
+    Sphere mysphere;// ( NEW )
+    // TextureManager mytexturemanager;
     private Pyramid pyramid;    // (NEW)
     private Cube cube;          // (NEW)
     private  TextureCube tcube;
@@ -23,6 +28,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private static float angleCube = 0;    // Rotational angle in degree for cube (NEW)
     private static float speedPyramid = 2.0f; // Rotational speed for pyramid (NEW)
     private static float speedCube = -1.5f;   // Rotational speed for cube (NEW)
+    Cylinder mycylinder;
 
     // For controlling cube's z-position, x and y angles and speeds (NEW)
     float angleX = 0;   // (NEW)
@@ -30,18 +36,24 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     float speedX = 0;   // (NEW)
     float speedY = 0;   // (NEW)
     float z = -6.0f;    // (NEW)
-
+int[] textureID;
 
     // Constructor with global application context
     public MyGLRenderer(Context context) {
         this.context = context;
+        // mytexturemanager=new TextureManager();
+
         // Set up the data-array buffers for these shapes ( NEW )
+
         triangle = new Triangle();   // ( NEW )
         quad = new Square();         // ( NEW )
         pyramid = new Pyramid();   // (NEW)
         cube = new Cube();         // (NEW)
         tcube= new TextureCube();
-        mysub= new Submarine(context);
+        textureID = new int[256]; // 256 textures
+
+        // mysub= new Submarine(context);
+        //mysphere = new Sphere(2,0.75f);
     }
 
     // Call back when the surface is first created or re-created
@@ -54,14 +66,36 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);  // nice perspective view
         gl.glShadeModel(GL10.GL_SMOOTH);   // Enable smooth shading of color
         gl.glDisable(GL10.GL_DITHER);      // Disable dithering for better performance
-
+        mycylinder = new Cylinder(gl,1,2,3,6);
         // You OpenGL|ES initialization code here
         // ......
+// generate list of textures
+
+        int resID=0;
+
+        int numtex=0;
+        do {
+            resID=context.getResources().getIdentifier("img_"+numtex, "drawable", "InsertappPackageNameHere");
+            if (resID!=0)
+                textureID[numtex]=resID;
+            numtex++;
+        }
+        while (resID!=0);
+
+
+        // load texture list
+       // mytexturemanager.add(textureID);
+       // mytexturemanager.loadTextures(context);
+
+
         // Setup Texture, each time the surface is created (NEW)
+       // mysphere.loadGLTexture(gl,context,R.drawable.polly);
+
         tcube.loadTexture(gl, context);    // Load image into Texture (NEW)
+
+       // int resid=context.getResources().R.drawable.polly; //getIdentifier(+ R.drawable.polly, "drawable",context.getPackageName());
+
         gl.glEnable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW)
-
-
 
     }
 
@@ -78,7 +112,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         gl.glMatrixMode(GL10.GL_PROJECTION); // Select projection matrix
         gl.glLoadIdentity();                 // Reset projection matrix
         // Use perspective projection
-        GLU.gluPerspective(gl, 45, aspect, 0.1f, 100.f);
+        GLU.gluPerspective(gl, 45, aspect, 0.1f, 50.f);
 
         gl.glMatrixMode(GL10.GL_MODELVIEW);  // Select model-view matrix
         gl.glLoadIdentity();                 // Reset
@@ -109,20 +143,25 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         gl.glTranslatef(-1.5f, 0.0f, -6.0f); // Translate left and into the screen
         gl.glRotatef(anglePyramid, 0.1f, 1.0f, -0.1f); // Rotate (NEW)
         pyramid.draw(gl);                              // Draw the pyramid (NEW)
-
-        // ----- Render the texture Cube -----
-        gl.glLoadIdentity();                // Reset the model-view matrix
-       // gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the screen
-        //gl.glScalef(0.8f, 0.8f, 0.8f);      // Scale down (NEW)
-        //gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis (1,1,1) (NEW)
-        gl.glTranslatef(0.0f, 0.0f, z);   // Translate into the screen (NEW)
-        gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
-        gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // Rotate (NEW)
-
-       // tcube.draw(gl);                      // Draw the cube (NEW)
-
-        // Update the rotational angle after each refresh (NEW)
         anglePyramid += speedPyramid;   // (NEW)
+
+        for(float x1=-1;x1<2;x1++) {
+
+            // ----- Render the texture Cube -----
+            gl.glLoadIdentity();                // Reset the model-view matrix
+            // gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the screen
+
+            //gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis (1,1,1) (NEW)
+            gl.glTranslatef((x1)*5, 0.0f, z);   // Translate into the screen (NEW)
+            gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
+            gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // Rotate (NEW)
+
+            //tcube.draw(gl);                      // Draw the cube (NEW)
+            mycylinder.draw(gl);
+            gl.glScalef(0.1f, 0.1f, 0.1f);      // Scale down (NEW)
+        }
+        // Update the rotational angle after each refresh (NEW)
+
         angleCube += speedCube;         // (NEW)
 // Update the rotational angle after each refresh (NEW)
         angleX += speedX;  // (NEW)
@@ -130,7 +169,17 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
 
         gl.glLoadIdentity();;
-        mysub.draw(gl);
+        // mysub.draw(gl);
+        gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the screen
+        //gl.glScalef(0.8f, 0.8f, 0.8f);      // Scale down (NEW)
+        gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis (1,1,1) (NEW)
+        gl.glTranslatef(0.0f, 0.0f, z);   // Translate into the screen (NEW)
+        gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
+        gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f);
+        //mysphere.draw(gl);
+
+
 
     }
+
 }

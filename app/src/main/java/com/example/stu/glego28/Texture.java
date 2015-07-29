@@ -54,6 +54,7 @@ public class Texture {
     }
 
     Texture(int resourceId) {
+
         this(resourceId, false);
     }
 

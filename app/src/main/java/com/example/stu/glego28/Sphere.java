@@ -139,7 +139,7 @@ class Sphere {
     }
 
     /**
-     * Load the texture for the square.
+     * Load the texture for the shape.
      *
      * @param gl Handle.
      * @param context Handle.
