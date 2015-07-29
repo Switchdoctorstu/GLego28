@@ -75,8 +75,8 @@ public class Cylinder {
 
 
     /**
-     * Calls uvCylinder(gl,0.5,1,32,10,5,true); to draw a cylinder with diameter and
-     * height both equal to 1 and with texture coords.  The cylinder has its base
+     * draws a cylinder with top diameter r1 , bottom diameter r2, and
+     * height  and with texture coords.  The cylinder has its base
      * in the xy-plane and its axis along the positive z-axis.
      */
     public Cylinder(GL10 gl, float r1,  float r2, float height, int slices) {
