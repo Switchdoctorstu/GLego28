@@ -5,6 +5,7 @@ package com.example.stu.glego28;
  */
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 /*
@@ -61,13 +62,51 @@ public class MyGLSurfaceView extends GLSurfaceView {
         float currentX = evt.getX();
         float currentY = evt.getY();
         float deltaX, deltaY;
-        switch (evt.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                // Modify rotational angles according to movement
-                deltaX = currentX - previousX;
-                deltaY = currentY - previousY;
-                renderer.angleX += deltaY * TOUCH_SCALE_FACTOR;
-                renderer.angleY += deltaX * TOUCH_SCALE_FACTOR;
+        int pointerCount = evt.getPointerCount();
+
+        String actionString;
+
+        for (int i = 0; i < pointerCount; i++) {
+            int x = (int) evt.getX(i);
+            int y = (int) evt.getY(i);
+            int id = evt.getPointerId(i);
+            int action = evt.getActionMasked();
+            int actionIndex = evt.getActionIndex();
+            actionString="Initialising";
+
+            switch (evt.getAction()) {
+                case MotionEvent.ACTION_MOVE:
+                    // Modify rotational angles according to movement
+                    deltaX = currentX - previousX;
+                    deltaY = currentY - previousY;
+                    renderer.angleX += deltaY * TOUCH_SCALE_FACTOR;
+                    renderer.angleY += deltaX * TOUCH_SCALE_FACTOR;
+                    actionString = "MOVE";
+                    break;
+                case MotionEvent.ACTION_DOWN:
+                    actionString = "DOWN";
+                    break;
+                case MotionEvent.ACTION_UP:
+                    actionString = "UP";
+                    break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    actionString = "PNTR DOWN";
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    actionString = "PNTR UP";
+                    break;
+
+                default:
+                    actionString = "";
+
+            }
+            String touchStatus = "Action: " + actionString + " Index: "
+                    + actionIndex + " ID: " + id + " X: " + x + " Y: " + y;
+            renderer.inputHandler.checkcontrollerballs(action, actionIndex,id,x,y);
+            // so we have a pointer action
+
+
+
         }
         // Save current x, y
         previousX = currentX;

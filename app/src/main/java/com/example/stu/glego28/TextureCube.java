@@ -18,7 +18,7 @@ import android.opengl.GLUtils;
  * Define the vertices for only one representative face.
  * Render the cube by translating and rotating the face.
  */
-public class TextureCube {
+public class TextureCube extends Primitive {
     Context context;
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
@@ -26,8 +26,8 @@ public class TextureCube {
     private float[] vertices = { // Vertices for a face
             -1f, -1f, 0.0f,  // 0. left-bottom-front
             1f, -1f, 0.0f,  // 1. right-bottom-front
-            -1f,  1f, 0.0f,  // 2. left-top-front
-            1f,  1f, 0.0f   // 3. right-top-front
+            -1f, 1f, 0.0f,  // 2. left-top-front
+            1f, 1f, 0.0f   // 3. right-top-front
     };
 
     float[] texCoords = { // Texture coords for the above face (NEW)
@@ -36,11 +36,16 @@ public class TextureCube {
             0.0f, 0.0f,  // C. left-top (NEW)
             1.0f, 0.0f   // D. right-top (NEW)
     };
-    int[] textureIDs = new int[1];   // Array for 1 texture-ID (NEW)
+
+    /**
+     * The texture pointer.
+     */
+    private final int[] mTextures = new int[1];
 
     // Constructor - Set up the buffers
     public TextureCube() {
         // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
+        super();
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
         vbb.order(ByteOrder.nativeOrder()); // Use native byte order
         vertexBuffer = vbb.asFloatBuffer(); // Convert from byte to float
@@ -55,6 +60,15 @@ public class TextureCube {
         texBuffer.position(0);
     }
 
+    /**
+     * Load the texture for the shape.
+     *
+     * @param texID GL texture identifier from texture manager
+     */
+    void setMygltextureid(int texID) {
+        mTextures[0] = texID;
+    }
+
     // Draw the shape
     public void draw(GL10 gl) {
         gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
@@ -65,9 +79,16 @@ public class TextureCube {
         gl.glVertexPointer(3, GL10.GL_FLOAT, 0, vertexBuffer);
         gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);  // Enable texture-coords-array (NEW)
         gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, texBuffer); // Define texture-coords buffer (NEW)
-
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, this.mTextures[0]);
         // front
         gl.glPushMatrix();
+        gl.glTranslatef(this.translation.Vx, this.translation.Vy, this.translation.Vz);   // Translate into the screen
+        gl.glRotatef(this.rotation.Vx, 1.0f, 0.0f, 0.0f); // Rotate x
+        gl.glRotatef(this.rotation.Vy, 0.0f, 1.0f, 0.0f); // Rotate y
+        gl.glRotatef(this.rotation.Vz, 0.0f, 0.0f, 1.0f); // Rotate y
+
+        gl.glScalef(this.scale.Vx, this.scale.Vy, this.scale.Vz);      // Scale down
+
         gl.glTranslatef(0.0f, 0.0f, 1.0f);
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
         gl.glPopMatrix();
@@ -112,30 +133,4 @@ public class TextureCube {
         gl.glDisable(GL10.GL_CULL_FACE);
     }
 
-    // Load an image into GL texture
-    public void loadTexture(GL10 gl, Context context) {
-        gl.glGenTextures(1, textureIDs, 0); // Generate texture-ID array
-
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[0]);   // Bind to texture ID
-        // Set up texture filters
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-
-        // Construct an input stream to texture image "res\drawable\nehe.png"
-        InputStream  istream = context.getResources().openRawResource(+ R.drawable.polly);
-        //InputStream istream = context.getResources().openRawResource(R.raw.polly1);
-        Bitmap bitmap;
-        try {
-            // Read and decode input as bitmap
-            bitmap = BitmapFactory.decodeStream(istream);
-        } finally {
-            try {
-                istream.close();
-            } catch(IOException e) { }
-        }
-
-        // Build Texture from loaded bitmap for the currently-bind texture ID
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
-        bitmap.recycle();
-    }
 }

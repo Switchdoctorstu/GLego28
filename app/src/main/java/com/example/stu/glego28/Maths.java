@@ -1,5 +1,7 @@
 package com.example.stu.glego28;
 
+import android.opengl.Matrix;
+
 /**
  * Created by Stu on 23/07/2015.
  */
@@ -54,5 +56,44 @@ class Maths {
 
         return p;
     }
+
+    double length(Quaternion quat)
+    {
+        return Math.sqrt(quat.qx * quat.qx + quat.qy * quat.qy +
+                quat.qz * quat.qz + quat.qw * quat.qw);
+    }
+
+    Quaternion normalize(Quaternion quat)
+    {
+        double L = length(quat);
+
+        quat.qx /= L;
+        quat.qy /= L;
+        quat.qz /= L;
+        quat.qw /= L;
+
+        return quat;
+    }
+
+    Quaternion conjugate(Quaternion quat)
+    {
+        quat.qx = -quat.qx;
+        quat.qy = -quat.qy;
+        quat.qz = -quat.qz;
+        return quat;
+    }
+
+    Quaternion mult(Quaternion A, Quaternion B)
+    {
+        Quaternion C = new Quaternion(0,0,0,0);
+
+        C.qx = A.qw*B.qx + A.qx*B.qw + A.qy*B.qz - A.qz*B.qy;
+        C.qy = A.qw*B.qy - A.qx*B.qz + A.qy*B.qw + A.qz*B.qx;
+        C.qz = A.qw*B.qz + A.qx*B.qy - A.qy*B.qx + A.qz*B.qw;
+        C.qw = A.qw*B.qw - A.qx*B.qx - A.qy*B.qy - A.qz*B.qz;
+        return C;
+    }
+
+
 }
 

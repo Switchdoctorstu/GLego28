@@ -5,46 +5,39 @@ import android.util.Log;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Created by Stu on 23/07/2015.
+ * Created by Stu on 8/16/2015.
  */
-public class Submarine extends Primitive{
-   // Context context;   // Application's context
+public class Torpedo extends Primitive{
+    // Context context;   // Application's context
 
     Cylinder cl1;
-    Cylinder cl2;
     Sphere s1;
-    Sphere s2;
+    Disc d1;
     int myglTextureID;
 
     public void setGLTextureID(int GLid){
         cl1.setMygltextureid(GLid);
-        cl2.setMygltextureid(GLid);
+        d1.setMygltextureid(GLid);
         s1.setGLtextureid(GLid);
-        s2.setGLtextureid(GLid);
-       myglTextureID=GLid;
+        myglTextureID=GLid;
 
     }
 
-    public Submarine(){
-      super();
+    public Torpedo(){
+       super();
         cl1 = new Cylinder(0.5f,0.5f,2,12);  // Hull
         Vertex3f cl1trans = new Vertex3f(0f,0f,0f);
         cl1.setTranslation(cl1trans);
-       // cl1.setTy(0f);
+        // cl1.setTy(0f);
         s1=new Sphere(0.5f,4);
-        s2=new Sphere(0.5f,4);
+        d1=new Disc(0.5f,6);
+
         s1.setTranslation(new Vertex3f(0f,0f,-1f));
-        s2.setTranslation(new Vertex3f(0f,0f,1f));
-
-        cl2 = new Cylinder(0.25f,0.25f,0.5f,6); // tower
-        Vertex3f cl2trans = new Vertex3f(0.5f,0.5f,0f);
-        cl2.setTranslation(cl2trans);
-        cl2.setRotation(new Vertex3f((float)Maths.NINETY_DEGREES,0f,0f));
-
+        d1.setTranslation(new Vertex3f(0f,0f,1f));
     }
 
     public void setTexture(TextureManager tm, int resourceID){
-        Log.i( "loadTexture ","Loading Submarine textures");
+        Log.i("loadTexture ", "Loading Submarine textures");
         Log.i("Texture = ", "ID:" + resourceID);
         int glid =tm.getTexID(resourceID);
         setGLTextureID(glid);
@@ -60,9 +53,8 @@ public class Submarine extends Primitive{
 
         gl.glScalef(this.scale.Vx, this.scale.Vy, this.scale.Vz);      // Scale
         cl1.draw(gl);
-        cl2.draw(gl);
+        d1.draw(gl);
         s1.draw(gl);
-        s2.draw(gl);
         // reset the matrix
         gl.glPopMatrix();
 

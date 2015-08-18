@@ -10,7 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 /*
  * A square drawn in 2 triangles (using TRIANGLE_STRIP).
  */
-public class Square {
+public class Square extends Primitive{
     private FloatBuffer vertexBuffer;  // Buffer for vertex-array
 
     private float[] vertices = {  // Vertices for the square
@@ -22,6 +22,7 @@ public class Square {
 
     // Constructor - Setup the vertex buffer
     public Square() {
+        super();
         // Setup vertex array buffer. Vertices in float. A float has 4 bytes
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
         vbb.order(ByteOrder.nativeOrder()); // Use native byte order

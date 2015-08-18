@@ -9,51 +9,61 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 
-import java.util.ArrayList;
-
 /**
  *  OpenGL Custom renderer used with GLSurfaceView
  */
 public class MyGLRenderer implements GLSurfaceView.Renderer {
     Context context;   // Application's context
-    Submarine mysub;
-    Triangle triangle;     // ( NEW )
-    Square quad;
-    Sphere mysphere;// ( NEW )
-    // TextureManager mytexturemanager;
+
+    Camera mycam;
+    public TextureManager texturemanager;
+    // displayed objects
+    private Submarine mysub;
+    private Sphere mysphere;// ( NEW )
     private Pyramid pyramid;    // (NEW)
-    private Cube cube;          // (NEW)
-    private  TextureCube tcube;
+    InputHandler inputHandler;
+    private SkyBox myskybox;
+int screenwidth;
+    int screenheight;
+    private Hud myhud;
+    // viewport paramters
+    private float nearplaneZ;  // distance cutoff plane
+    private float farplaneZ;    // near view cutoff plane
     private static float anglePyramid = 0; // Rotational angle in degree for pyramid (NEW)
     private static float angleCube = 0;    // Rotational angle in degree for cube (NEW)
-    private static float speedPyramid = 2.0f; // Rotational speed for pyramid (NEW)
-    private static float speedCube = -1.5f;   // Rotational speed for cube (NEW)
-    Cylinder mycylinder;
+    private static float speedPyramid = 0.5f; // Rotational speed for pyramid (NEW)
+    private static float speedCube = -0.5f;   // Rotational speed for cube (NEW)
 
+    // try some text
+    RGB fontRGB;
     // For controlling cube's z-position, x and y angles and speeds (NEW)
     float angleX = 0;   // (NEW)
     float angleY = 0;   // (NEW)
     float speedX = 0;   // (NEW)
     float speedY = 0;   // (NEW)
     float z = -6.0f;    // (NEW)
-int[] textureID;
 
     // Constructor with global application context
     public MyGLRenderer(Context context) {
         this.context = context;
-        // mytexturemanager=new TextureManager();
-
-        // Set up the data-array buffers for these shapes ( NEW )
-
-        triangle = new Triangle();   // ( NEW )
-        quad = new Square();         // ( NEW )
+        // texture management
+        texturemanager=new TextureManager();
+        // build our objects
         pyramid = new Pyramid();   // (NEW)
-        cube = new Cube();         // (NEW)
-        tcube= new TextureCube();
-        textureID = new int[256]; // 256 textures
+        mysub= new Submarine();
+        mysphere = new Sphere(0.75f,2);
+        myskybox=new SkyBox(); //
 
-        // mysub= new Submarine(context);
-        //mysphere = new Sphere(2,0.75f);
+        mycam=new Camera(new Vertex3f(0f,0f,2f),new Vertex3f(0f,0f,0f),new Vertex3f(0f,0f,0f));
+        nearplaneZ=0.1f;
+        farplaneZ=50.0f;
+        // control handler
+        inputHandler = new InputHandler();
+        myhud=new Hud(inputHandler);
+    }
+
+    void userinput(){
+
     }
 
     // Call back when the surface is first created or re-created
@@ -66,37 +76,34 @@ int[] textureID;
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);  // nice perspective view
         gl.glShadeModel(GL10.GL_SMOOTH);   // Enable smooth shading of color
         gl.glDisable(GL10.GL_DITHER);      // Disable dithering for better performance
-        mycylinder = new Cylinder(gl,1,2,3,6);
+        // mycylinder = new Cylinder(gl,1,2,3,6);
         // You OpenGL|ES initialization code here
         // ......
-// generate list of textures
+        // load our textures
+        texturemanager.add(R.drawable.aboveseabox);
+        texturemanager.add(R.drawable.dayskybox);
+        texturemanager.add(R.drawable.polly);
+        texturemanager.add(R.drawable.water001);
+        texturemanager.add(R.drawable.aluminium003);
+        texturemanager.add(R.drawable.yellow2);
 
-        int resID=0;
+        texturemanager.loadTextures(gl,context);
 
-        int numtex=0;
-        do {
-            resID=context.getResources().getIdentifier("img_"+numtex, "drawable", "InsertappPackageNameHere");
-            if (resID!=0)
-                textureID[numtex]=resID;
-            numtex++;
-        }
-        while (resID!=0);
+        // Setup Textures each time the surface is created
+        mysub.setGLTextureID(texturemanager.getTexID(R.drawable.yellow2));
+        mysphere.setGLtextureid(texturemanager.getTexID(R.drawable.polly));
+        myskybox.setGLtextureID(texturemanager.getTexID(R.drawable.aboveseabox));
+        myhud.setGLTextureid(texturemanager.getTexID(R.drawable.aluminium003));
 
-
-        // load texture list
-       // mytexturemanager.add(textureID);
-       // mytexturemanager.loadTextures(context);
-
-
-        // Setup Texture, each time the surface is created (NEW)
-       // mysphere.loadGLTexture(gl,context,R.drawable.polly);
-
-        tcube.loadTexture(gl, context);    // Load image into Texture (NEW)
-
-       // int resid=context.getResources().R.drawable.polly; //getIdentifier(+ R.drawable.polly, "drawable",context.getPackageName());
+        // position objects in space
+        Vertex3f substart = new Vertex3f(0f,0.0f,-8.0f);
+        mysub.setTranslation(substart);
+        mysub.setRotation(new Vertex3f(0f,0f,0f));
+        mysub.setScale(new Vertex3f(0.5f,0.5f,0.5f));
+        myskybox.setScale(new Vertex3f(20f,20f,20f));
+        myskybox.setTranslation(new Vertex3f(0,0,0));
 
         gl.glEnable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW)
-
     }
 
     // Call back after onSurfaceCreated() or whenever the window's size changes
@@ -104,15 +111,20 @@ int[] textureID;
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         if (height == 0) height = 1;   // To prevent divide by zero
         float aspect = (float)width / height;
-
+        screenheight=height;
+        screenwidth=width;
         // Set the viewport (display area) to cover the entire window
         gl.glViewport(0, 0, width, height);
+        myhud.setHW((float) height, (float) width);
 
+        myhud.setTranslation(new Vertex3f(0f, 0f, -0.2f));
+        // myhud.setScale(new Vertex3f(aspect,aspect,aspect));
         // Setup perspective projection, with aspect ratio matches viewport
         gl.glMatrixMode(GL10.GL_PROJECTION); // Select projection matrix
         gl.glLoadIdentity();                 // Reset projection matrix
         // Use perspective projection
-        GLU.gluPerspective(gl, 45, aspect, 0.1f, 50.f);
+
+        GLU.gluPerspective(gl, 45, aspect, nearplaneZ, farplaneZ);
 
         gl.glMatrixMode(GL10.GL_MODELVIEW);  // Select model-view matrix
         gl.glLoadIdentity();                 // Reset
@@ -128,58 +140,48 @@ int[] textureID;
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
         // You OpenGL|ES rendering code here
-        // ......
-       /*
-        gl.glLoadIdentity();                 // Reset model-view matrix ( NEW )
-        gl.glTranslatef(-1.5f, 0.0f, -6.0f); // Translate left and into the screen ( NEW )
-        triangle.draw(gl);                   // Draw triangle ( NEW )
-
-        // Translate right, relative to the previous translation ( NEW )
-        gl.glTranslatef(3.0f, 0.0f, 0.0f);
-        quad.draw(gl);                       // Draw quad ( NEW )
-        */
-        // ----- Render the Pyramid -----
         gl.glLoadIdentity();                 // Reset the model-view matrix
         gl.glTranslatef(-1.5f, 0.0f, -6.0f); // Translate left and into the screen
         gl.glRotatef(anglePyramid, 0.1f, 1.0f, -0.1f); // Rotate (NEW)
         pyramid.draw(gl);                              // Draw the pyramid (NEW)
         anglePyramid += speedPyramid;   // (NEW)
 
-        for(float x1=-1;x1<2;x1++) {
-
-            // ----- Render the texture Cube -----
-            gl.glLoadIdentity();                // Reset the model-view matrix
-            // gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the screen
-
-            //gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis (1,1,1) (NEW)
-            gl.glTranslatef((x1)*5, 0.0f, z);   // Translate into the screen (NEW)
-            gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
-            gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // Rotate (NEW)
-
-            //tcube.draw(gl);                      // Draw the cube (NEW)
-            mycylinder.draw(gl);
-            gl.glScalef(0.1f, 0.1f, 0.1f);      // Scale down (NEW)
-        }
-        // Update the rotational angle after each refresh (NEW)
-
-        angleCube += speedCube;         // (NEW)
-// Update the rotational angle after each refresh (NEW)
-        angleX += speedX;  // (NEW)
-        angleY += speedY;  // (NEW)
-
+        gl.glLoadIdentity();                // Reset the model-view matrix
+        mysub.setRotation(new Vertex3f(angleX,angleY,0f));
+        mysub.draw(gl);
 
         gl.glLoadIdentity();;
-        // mysub.draw(gl);
-        gl.glTranslatef(1.5f, 0.0f, -6.0f); // Translate right and into the screen
-        //gl.glScalef(0.8f, 0.8f, 0.8f);      // Scale down (NEW)
+        gl.glTranslatef(1.5f, 0.0f, -3.0f); // Translate right and into the screen
         gl.glRotatef(angleCube, 1.0f, 1.0f, 1.0f); // rotate about the axis (1,1,1) (NEW)
-        gl.glTranslatef(0.0f, 0.0f, z);   // Translate into the screen (NEW)
-        gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
-        gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f);
-        //mysphere.draw(gl);
+        gl.glTranslatef(0.0f, 0.0f, z);   // Translate into the screen
 
+       gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotate (NEW)
+       gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f);
+       mysphere.draw(gl);
 
+        // Update the rotational angle after each refresh (NEW)
+        angleCube += speedCube;         // (NEW)
+        angleX += speedX;  // (NEW)
+        angleY += speedY;  // (NEW)
+        // sky box
+        gl.glLoadIdentity();
+        myskybox.draw(gl);
 
+        // point the camera
+        gl.glLoadIdentity();
+       // mycam.point(gl);
+
+        //HUD
+        //gl.glLoadIdentity();
+        myhud.draw(gl);
+        gl.glLoadIdentity();
     }
 
+    public float getNearplaneZ() {
+        return nearplaneZ;
+    }
+
+    public float getFarplaneZ() {
+        return farplaneZ;
+    }
 }

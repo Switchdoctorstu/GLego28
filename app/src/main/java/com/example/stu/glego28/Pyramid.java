@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
-public class Pyramid {
+public class Pyramid extends Primitive {
     private FloatBuffer vertexBuffer;  // Buffer for vertex-array
     private FloatBuffer colorBuffer;   // Buffer for color-array
     private ByteBuffer indexBuffer;    // Buffer for index-array
@@ -38,6 +38,7 @@ public class Pyramid {
 
     // Constructor - Set up the buffers
     public Pyramid() {
+        super();
         // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
         vbb.order(ByteOrder.nativeOrder()); // Use native byte order

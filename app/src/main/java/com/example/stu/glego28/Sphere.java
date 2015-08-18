@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -22,7 +24,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @author Jim Cornmell
  * @since July 2013
  */
-class Sphere {
+class Sphere extends Primitive {
     /** Maximum allowed depth. */
     private static final int MAXIMUM_ALLOWED_DEPTH = 5;
 
@@ -55,13 +57,17 @@ class Sphere {
 
     /** Total number of strips for the given depth. */
     private final int mTotalNumStrips;
+    private float tx;
+
+
 
     /**
      * Sphere constructor.
      * @param depth integer representing the split of the sphere.
      * @param radius The spheres radius.
      */
-    public Sphere(final int depth, final float radius) {
+    public Sphere(final float radius, final int depth ) {
+        super();
         // Clamp depth to the range 1 to MAXIMUM_ALLOWED_DEPTH;
         final int d = Math.max(1, Math.min(MAXIMUM_ALLOWED_DEPTH, depth));
 
@@ -72,7 +78,6 @@ class Sphere {
         final double azimuthStepAngle = Maths.THREE_SIXTY_DEGREES / this.mTotalNumStrips;
         double x, y, z, h, altitude, azimuth;
         final List<float[]> texture = new ArrayList<>();
-
 
         for (int stripNum = 0; stripNum < this.mTotalNumStrips; stripNum++) {
             // Setup arrays to hold the points for this strip.
@@ -136,28 +141,19 @@ class Sphere {
             fb.position(0);
             this.mTextureBuffer.add(fb);
         }
+        // set initial position and rotation
+
+
     }
+
 
     /**
      * Load the texture for the shape.
      *
-     * @param gl Handle.
-     * @param context Handle.
-     * @param texture Texture map for the sphere.
+     * @param texID GL texture identifier from texture manager
      */
-    public void loadGLTexture(final GL10 gl, final Context context, final int texture) {
-        // Generate one texture pointer, and bind it to the texture array.
-        gl.glGenTextures(1, this.mTextures, 0);
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, this.mTextures[0]);
-
-        // Create nearest filtered texture.
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-
-        // Use Android GLUtils to specify a two-dimensional texture image from our bitmap.
-        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), texture);
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
-        bitmap.recycle();
+    void setGLtextureid(int texID){
+        mTextures[0]=texID;
     }
 
     /**
@@ -168,7 +164,14 @@ class Sphere {
     public void draw(final GL10 gl) {
         // bind the previously generated texture.
         gl.glBindTexture(GL10.GL_TEXTURE_2D, this.mTextures[0]);
+        gl.glPushMatrix();
+        // gl.glLoadIdentity();
+        gl.glTranslatef(this.translation.Vx,this.translation.Vy, this.translation.Vz);   // Translate into the screen
+        gl.glRotatef(this.rotation.Vx, 1.0f, 0.0f, 0.0f); // Rotate x
+        gl.glRotatef(this.rotation.Vy, 0.0f, 1.0f, 0.0f); // Rotate y
+        gl.glRotatef(this.rotation.Vz, 0.0f, 0.0f, 1.0f); // Rotate y
 
+        gl.glScalef(this.scale.Vx, this.scale.Vy, this.scale.Vz);      // Scale down
         // Point to our buffers.
         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
@@ -188,5 +191,7 @@ class Sphere {
         // Disable the client state before leaving.
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+        // reset the matrix
+        gl.glPopMatrix();
     }
 }
