@@ -1,48 +1,46 @@
 package com.example.stu.glego28;
+import android.util.Log;
+
+import java.util.Vector;
 
 import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by Stu on 8/17/2015.
  */
-public class Camera {
-    Vertex3f position,looking,rotation;
+public class Camera extends Primitive{
+    Vertex3f target;
+    Quaternion camquat;
 
-    public Camera(Vertex3f pos,Vertex3f look, Vertex3f rot){
-        position=pos;
-        looking=look;
-        rotation=rot;
+    public Camera(Vertex3f pos, Vertex3f look, Vertex3f up){
+        super();
+        this.target=look;
+        this.translation=pos;
+        this.rotation=up;
+
     }
 
-    public Vertex3f getPosition() {
-        return position;
+    public Vertex3f getTarget() {
+        return target;
     }
 
-    public void setPosition(Vertex3f position) {
-        this.position = position;
+    public void setTarget(Vertex3f look) {
+        this.target = look;
+
     }
 
-    public Vertex3f getLooking() {
-        return looking;
+
+    public void rotate(Point2D turn){
+        // we've been given a turn in the form of x,y =long,lat
+        // need to convert to a quaternion then apply to camera position
+        // as a rotation around look
+        // look is centre of rotation
+        // pos is radius
+
+        // start with vector from pos to look
+        Log.i("Camera" , "Turn X:"+turn.x+" Y:"+turn.y);
+
     }
 
-    public void setLooking(Vertex3f looking) {
-        this.looking = looking;
-    }
 
-    public Vertex3f getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(Vertex3f rotation) {
-        this.rotation = rotation;
-    }
-
-    void point(GL10 gl){
-
-        gl.glTranslatef(this.position.Vx,this.position.Vy, this.position.Vz);   // Translate into the screen
-        gl.glRotatef(this.rotation.Vx, 1.0f, 0.0f, 0.0f); // Rotate x
-        gl.glRotatef(this.rotation.Vy, 0.0f, 1.0f, 0.0f); // Rotate y
-        gl.glRotatef(this.rotation.Vz, 0.0f, 0.0f, 1.0f); // Rotate y
-    }
 }

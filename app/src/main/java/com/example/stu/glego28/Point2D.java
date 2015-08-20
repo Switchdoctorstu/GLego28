@@ -20,4 +20,8 @@ public class Point2D {
         return new Point2D(x * scalar, y * scalar);
     }
 
+    public Point2D subtract(Point2D a){
+        Point2D c=new Point2D(this.x-a.x,this.y-a.y);
+        return c;
+    }
 }

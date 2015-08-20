@@ -99,7 +99,7 @@ int screenwidth;
         Vertex3f substart = new Vertex3f(0f,0.0f,-8.0f);
         mysub.setTranslation(substart);
         mysub.setRotation(new Vertex3f(0f,0f,0f));
-        mysub.setScale(new Vertex3f(0.5f,0.5f,0.5f));
+        mysub.setScale(new Vertex3f(1f,1f,1f));
         myskybox.setScale(new Vertex3f(20f,20f,20f));
         myskybox.setTranslation(new Vertex3f(0,0,0));
 
@@ -167,14 +167,13 @@ int screenwidth;
         gl.glLoadIdentity();
         myskybox.draw(gl);
 
+        //HUD
+        gl.glLoadIdentity();
+        myhud.draw(gl);
         // point the camera
         gl.glLoadIdentity();
-       // mycam.point(gl);
+        GLU.gluLookAt(gl, mycam.getRotation().Vx,mycam.getRotation().Vy,mycam.getRotation().Vz, mycam.getTarget().Vx,mycam.getTarget().Vy,mycam.getTarget().Vz,mycam.getRotation().Vx,mycam.getRotation().Vy,mycam.getRotation().Vz);
 
-        //HUD
-        //gl.glLoadIdentity();
-        myhud.draw(gl);
-        gl.glLoadIdentity();
     }
 
     public float getNearplaneZ() {

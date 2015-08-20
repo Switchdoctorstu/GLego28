@@ -2,6 +2,8 @@ package com.example.stu.glego28;
 
 import android.opengl.Matrix;
 
+import java.util.Vector;
+
 /**
  * Created by Stu on 23/07/2015.
  */
@@ -26,6 +28,19 @@ class Maths {
      * Constructor, although not used at the moment.
      */
     private Maths() {
+    }
+
+    /** PI constant as float */
+    public static float PI = 3.141592653589f;
+    /** PI/2 constant as float */
+    public static float HALF_PI = 1.5707963267946f;
+    /** Convert radians to degrees */
+    public static float toDegrees(float radians){
+        return radians*180/PI;
+    }
+    /** Convert degrees to radians */
+    public static float toRadians(float degrees){
+        return degrees*PI/180;
     }
 
     /**
@@ -59,27 +74,27 @@ class Maths {
 
     double length(Quaternion quat)
     {
-        return Math.sqrt(quat.qx * quat.qx + quat.qy * quat.qy +
-                quat.qz * quat.qz + quat.qw * quat.qw);
+        return Math.sqrt(quat.x * quat.x + quat.y * quat.y +
+                quat.z * quat.z + quat.w * quat.w);
     }
 
     Quaternion normalize(Quaternion quat)
     {
         double L = length(quat);
 
-        quat.qx /= L;
-        quat.qy /= L;
-        quat.qz /= L;
-        quat.qw /= L;
+        quat.x /= L;
+        quat.y /= L;
+        quat.z /= L;
+        quat.w /= L;
 
         return quat;
     }
 
     Quaternion conjugate(Quaternion quat)
     {
-        quat.qx = -quat.qx;
-        quat.qy = -quat.qy;
-        quat.qz = -quat.qz;
+        quat.x = -quat.x;
+        quat.y = -quat.y;
+        quat.z = -quat.z;
         return quat;
     }
 
@@ -87,10 +102,10 @@ class Maths {
     {
         Quaternion C = new Quaternion(0,0,0,0);
 
-        C.qx = A.qw*B.qx + A.qx*B.qw + A.qy*B.qz - A.qz*B.qy;
-        C.qy = A.qw*B.qy - A.qx*B.qz + A.qy*B.qw + A.qz*B.qx;
-        C.qz = A.qw*B.qz + A.qx*B.qy - A.qy*B.qx + A.qz*B.qw;
-        C.qw = A.qw*B.qw - A.qx*B.qx - A.qy*B.qy - A.qz*B.qz;
+        C.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y;
+        C.y = A.w*B.y - A.x*B.z + A.y*B.w + A.z*B.x;
+        C.z = A.w*B.z + A.x*B.y - A.y*B.x + A.z*B.w;
+        C.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z;
         return C;
     }
 
